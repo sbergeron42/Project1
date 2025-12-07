@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table
+@Table(name = "WAREHOUSES")
 public class Warehouse {
 
     @Id
@@ -24,14 +24,102 @@ public class Warehouse {
     private String location;
 
     // maybe should have a limit on how high the number can be?
-    @Column
+    @Column(name = "max_capacity")
     private int maxCapacity;
 
-    // same here
-    @Column
-    private int currentCapacity;
+    // same here. also idk how this is calculated 
+    //@Column
+    //private int currentCapacity;
 
     // inventoryProducts here? idk 
+
+    public Warehouse() {
+    }
+
+    public Warehouse(int id, String name, String location, int maxCapacity) {
+        this.id = id;
+        this.name = name;
+        this.location = location;
+        this.maxCapacity = maxCapacity;
+    }
+
+    public Warehouse(String name, String location, int maxCapacity) {
+        this.name = name;
+        this.location = location;
+        this.maxCapacity = maxCapacity;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(int maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((location == null) ? 0 : location.hashCode());
+        result = prime * result + maxCapacity;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Warehouse other = (Warehouse) obj;
+        if (id != other.id)
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (location == null) {
+            if (other.location != null)
+                return false;
+        } else if (!location.equals(other.location))
+            return false;
+        if (maxCapacity != other.maxCapacity)
+            return false;
+        return true;
+    }
+
+    
+    
 
 
 

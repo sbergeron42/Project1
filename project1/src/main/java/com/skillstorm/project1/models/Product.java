@@ -25,11 +25,13 @@ public class Product {
 
     // description here
 
-    // quantity here maybe?
+    // quantity here maybe? maybe that's in inventory
 
     // storageLocation here?
 
     // could put a user review rating here
+    
+    // i wonder if there should be a picture property here too?
 
 
 }
