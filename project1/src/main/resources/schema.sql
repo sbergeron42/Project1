@@ -1,8 +1,9 @@
 /* DELETE WHEN DONE TESTING */
 
+drop table if exists INVENTORY;
 drop table if exists WAREHOUSES;
 drop table if exists PRODUCTS;
-drop table if exists INVENTORY;
+
 
 create table WAREHOUSES (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,6 +27,8 @@ create table INVENTORY (
     warehouse_id INT,
     product_id INT,
     quantity INT DEFAULT 0,
+    storage_location VARCHAR(50),
     FOREIGN KEY (warehouse_id) REFERENCES WAREHOUSES(id),
-    FOREIGN KEY (product_id) REFERENCES PRODUCTS(id)
+    FOREIGN KEY (product_id) REFERENCES PRODUCTS(id),
+    UNIQUE (warehouse_id, product_id, storage_location)
 );

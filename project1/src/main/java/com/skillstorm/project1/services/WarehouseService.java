@@ -20,4 +20,28 @@ public class WarehouseService {
     public List<Warehouse> findAllWarehouses() {
         return warehouseRepository.findAll();
     }
+
+    public Warehouse saveWarehouse(Warehouse warehouse) {
+        return warehouseRepository.save(warehouse);
+    }
+
+    public Warehouse updateWarehouse(int id, Warehouse updated) {
+        return warehouseRepository.findById(id)
+            .map(existing -> {
+                existing.setName(updated.getName());
+                existing.setLocation(updated.getLocation());
+                existing.setMaxCapacity(updated.getMaxCapacity());
+                return warehouseRepository.save(existing);
+            })
+            .orElse(null);
+    }
+
+    public int deleteWarehouse(int warehouse_id) {
+        Warehouse warehouse = warehouseRepository.findById(warehouse_id).orElse(null);
+        if (warehouse != null) {
+            warehouseRepository.delete(warehouse);
+            return 1;
+        } else return 0;
+    }
+
 }

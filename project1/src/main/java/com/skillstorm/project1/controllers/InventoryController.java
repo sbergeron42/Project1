@@ -6,39 +6,37 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.skillstorm.project1.models.Product;
-import com.skillstorm.project1.models.Warehouse;
-import com.skillstorm.project1.services.ProductService;
-import com.skillstorm.project1.services.WarehouseService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
+import com.skillstorm.project1.models.Inventory;
+import com.skillstorm.project1.services.InventoryService;
 
 @RestController
-@RequestMapping("/products")
-public class ProductController {
+@RequestMapping("/inventory")
+public class InventoryController {
 
-    private final ProductService productService;
+
+    private final InventoryService inventoryService;
     
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public InventoryController(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> findAllProducts() {
+    public ResponseEntity<List<Inventory>> findAllInventories() {
         try {
-            List<Product> products = productService.findAllProducts();
-            return new ResponseEntity<>(products, HttpStatus.OK); // return 200
+            List<Inventory> inventories = inventoryService.findAllInventories();
+            return new ResponseEntity<>(inventories, HttpStatus.OK); // return 200
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build(); // return 500
         }
 
     }
 
+    /*
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody Product updated) {
         Product product = productService.updateProduct(id, updated);
@@ -46,7 +44,5 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(product);
-    }
-    
-
+    }*/
 }

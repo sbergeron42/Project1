@@ -4,26 +4,25 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.skillstorm.project1.models.Product;
-import com.skillstorm.project1.models.Warehouse;
-import com.skillstorm.project1.repositories.ProductRepository;
-import com.skillstorm.project1.repositories.WarehouseRepository;
+import com.skillstorm.project1.models.Inventory;
+import com.skillstorm.project1.repositories.InventoryRepository;
 
 @Service
-public class ProductService {
+public class InventoryService {
 
-    private final ProductRepository productRepository;
+    private final InventoryRepository inventoryRepository;
 
     // constructor injection
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public InventoryService(InventoryRepository inventoryRepository) {
+        this.inventoryRepository = inventoryRepository;
     }
 
-    public List<Product> findAllProducts() {
-        return productRepository.findAll();
+    public List<Inventory> findAllInventories() {
+        return inventoryRepository.findAll();
     }
 
 
+    /*
     public Product updateProduct(int id, Product updated) {
         return productRepository.findById(id)
             .map(existing -> {
@@ -34,6 +33,6 @@ public class ProductService {
                 return productRepository.save(existing);
             })
             .orElse(null);
-    }
-
+    }*/
+    
 }
