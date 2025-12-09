@@ -13,12 +13,12 @@ insert into PRODUCTS (name, manufacturer, sku) values ('QSense Motion', '2M Engi
 
 
 insert into INVENTORY (warehouse_id, product_id, quantity, storage_location) values
-(1, 1, 50, 'First Bay'),
-(1, 1, 30, 'Second Bay'),
-(1, 2, 20, 'Third Bay'),
-(2, 3, 15, 'Office'),
-(2, 4, 25, 'Central Bay'),
-(3, 5, 40, 'North Bay'),
-(3, 1, 10, 'South Bay'),
-(4, 2, 5, '1st Aisle'),
-(4, 3, 7, '2nd Aisle');
+(1, 1, 5000, 'First Bay'),
+(1, 1, 3000, 'Second Bay'),
+(1, 2, 750, 'Third Bay'),
+(2, 3, 800, 'Office'),
+(2, 4, 250, 'Central Bay'),
+(3, 5, 400, 'North Bay'),
+(3, 1, 100, 'South Bay'),
+(4, 2, 500, '1st Aisle'),
+(4, 3, 700, '2nd Aisle');

@@ -13,7 +13,8 @@ import com.skillstorm.project1.models.Inventory;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Integer>{
 
-    // DEPRECATED List<Inventory> findByWarehouseId(int warehouseId);
+    // for summing inventory by warehouse
+    List<Inventory> findByWarehouseId(int warehouseId);
 
     @Query("""
         SELECT i FROM Inventory i

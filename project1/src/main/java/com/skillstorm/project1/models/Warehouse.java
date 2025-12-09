@@ -27,11 +27,7 @@ public class Warehouse {
     @Column(name = "max_capacity")
     private int maxCapacity;
 
-    // same here. also idk how this is calculated 
-    //@Column
-    //private int currentCapacity;
-
-    // inventoryProducts here? idk 
+    // current capacity is calculated/read-only
 
     public Warehouse() {
     }
