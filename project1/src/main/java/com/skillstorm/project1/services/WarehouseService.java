@@ -21,6 +21,10 @@ public class WarehouseService {
         return warehouseRepository.findAll();
     }
 
+    public Warehouse findWarehouse(int warehouseId) {
+        return warehouseRepository.findById(warehouseId).orElse(null);
+    }
+
     public Warehouse saveWarehouse(Warehouse warehouse) {
         return warehouseRepository.save(warehouse);
     }
@@ -36,8 +40,8 @@ public class WarehouseService {
             .orElse(null);
     }
 
-    public int deleteWarehouse(int warehouse_id) {
-        Warehouse warehouse = warehouseRepository.findById(warehouse_id).orElse(null);
+    public int deleteWarehouse(int warehouseId) {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
         if (warehouse != null) {
             warehouseRepository.delete(warehouse);
             return 1;

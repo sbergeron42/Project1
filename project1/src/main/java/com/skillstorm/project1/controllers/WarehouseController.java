@@ -33,14 +33,22 @@ public class WarehouseController {
 
     @GetMapping
     public ResponseEntity<List<Warehouse>> findAllWarehouses() {
-
         try {
             List<Warehouse> warehouses = warehouseService.findAllWarehouses();
             return new ResponseEntity<>(warehouses, HttpStatus.OK); // return 200
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build(); // return 500
         }
+    }
 
+    @GetMapping("/{warehouseId}")
+    public ResponseEntity<Warehouse> findWarehouse(@PathVariable int warehouseId) {
+        try {
+            Warehouse warehouse = warehouseService.findWarehouse(warehouseId);
+            return new ResponseEntity<>(warehouse, HttpStatus.OK); // return 200
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build(); // return 500
+        }
     }
     
     // not sure if I should have the PostMapping address be /warehouse or just blank as I have
@@ -59,9 +67,9 @@ public class WarehouseController {
         return ResponseEntity.ok(warehouse);
     }
     
-    @DeleteMapping("/{warehouse_id}")
-    public ResponseEntity<?> deleteWarehouse(@PathVariable int warehouse_id) {
-        int result = warehouseService.deleteWarehouse(warehouse_id);
+    @DeleteMapping("/{warehouseId}")
+    public ResponseEntity<?> deleteWarehouse(@PathVariable int warehouseId) {
+        int result = warehouseService.deleteWarehouse(warehouseId);
         if (result == 1) {
             return ResponseEntity.ok(1);
         } else return ResponseEntity.ok().build();
