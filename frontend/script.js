@@ -90,7 +90,7 @@ function showWarehouses() {
   const container = document.getElementById('warehousesSection');
   
   let html = '<h2>Warehouses</h2>';
-  html += '<button class="btn btn-primary mb-3" onclick="showWarehouseForm()">Add Warehouse</button>';
+  html += '<button class="btn btn-primary mb-3" data-action="add-warehouse">Add Warehouse</button>';
   
   if (warehouses.length === 0) {
     html += '<p>No warehouses yet</p>';
@@ -104,8 +104,8 @@ function showWarehouses() {
       html += '<h5>' + w.name + '</h5>';
       html += '<p>' + w.location + '</p>';
       html += '<p>Capacity: ' + w.maxCapacity + '</p>';
-      html += '<button class="btn btn-sm btn-primary" onclick="editWarehouse(' + w.id + ')">Edit</button> ';
-      html += '<button class="btn btn-sm btn-danger" onclick="deleteWarehouse(' + w.id + ')">Delete</button>';
+      html += '<button class="btn btn-sm btn-primary" data-action="edit-warehouse" data-id="' + w.id + '">Edit</button> ';
+      html += '<button class="btn btn-sm btn-danger" data-action="delete-warehouse" data-id="' + w.id + '">Delete</button>';
       html += '</div></div></div>';
     }
     html += '</div>';
@@ -144,6 +144,28 @@ function hideWarehouseForm() {
 
 function hideInventoryForm() {
   document.getElementById('inventoryFormDiv').style.display = 'none';
+}
+
+// Show/hide transfer form
+function showTransferForm() {
+  const formDiv = document.getElementById('transferFormDiv');
+  formDiv.style.display = 'block';
+  
+  // Fill warehouse dropdown
+  const warehouseSelect = document.getElementById('transferTargetWarehouse');
+  let options = '<option value="">Select Warehouse</option>';
+  for (let i = 0; i < warehouses.length; i++) {
+    options += '<option value="' + warehouses[i].id + '">' + warehouses[i].name + '</option>';
+  }
+  warehouseSelect.innerHTML = options;
+}
+
+function hideTransferForm() {
+  document.getElementById('transferFormDiv').style.display = 'none';
+  // Clear the form fields
+  document.getElementById('transferItemId').value = '';
+  document.getElementById('transferQuantity').value = '';
+  document.getElementById('transferTargetWarehouse').value = '';
 }
 
 // Save warehouse
@@ -249,39 +271,41 @@ function showInventory() {
   const container = document.getElementById('inventorySection');
 
   let html = '<h2>Inventory</h2>';
-  html += '<button class="btn btn-primary mb-3" onclick="showInventoryForm()">Add Item</button>';
-  html += `
-    <div class="card p-3 mb-3" style="display:inline-block; vertical-align:middle;">
-      <h5>Transfer Inventory</h5>
-      <div class="mb-2">
-        <input type="number" id="transferItemIdInput" placeholder="Item ID" class="form-control" style="width:120px; display:inline-block;">
-        <input type="number" id="transferQuantityInput" placeholder="Quantity" class="form-control" style="width:120px; display:inline-block; margin-left:5px;">
-        <select id="transferTargetWarehouseInput" class="form-control" style="width:150px; display:inline-block; margin-left:5px;">
-          <option value="">Select Warehouse</option>
-        </select>
-        <button class="btn btn-success" onclick="submitTransfer()" style="margin-left:5px;">Transfer</button>
-      </div>
-    </div>
-  `;
+  html += '<button class="btn btn-primary mb-3" data-action="add-inventory">Add Item</button> ';
+  html += '<button class="btn btn-info mb-3" data-action="show-transfer">Transfer</button>';
 
   if (inventory.length === 0) {
     html += '<p>No inventory items yet</p>';
   } else {
-    html += '<table class="table">';
-    html += '<tr><th>SKU</th><th>Name</th><th>Warehouse</th><th>Storage Location</th><th>Quantity</th><th>Actions</th></tr>';
-
+    // Sort inventory by warehouse name, then by ID within each warehouse
+    let sortedInventory = [];
     for (let i = 0; i < inventory.length; i++) {
-      let item = inventory[i];
+      sortedInventory.push(inventory[i]);
+    }
+    
+    sortedInventory.sort((a, b) => {
+      if (a.warehouse.name !== b.warehouse.name) {
+        return a.warehouse.name.localeCompare(b.warehouse.name);
+      }
+      return a.id - b.id;
+    });
+    
+    html += '<table class="table">';
+    html += '<tr><th>ID</th><th>SKU</th><th>Name</th><th>Warehouse</th><th>Storage Location</th><th>Quantity</th><th>Actions</th></tr>';
+
+    for (let i = 0; i < sortedInventory.length; i++) {
+      let item = sortedInventory[i];
 
       html += '<tr>';
-      html += '<td>' + item.product.sku + '</td>';      // Nested product object
-      html += '<td>' + item.product.name + '</td>';     // Nested product object
-      html += '<td>' + item.warehouse.name + '</td>';   // Nested warehouse object
+      html += '<td>' + item.id + '</td>';
+      html += '<td>' + item.product.sku + '</td>';
+      html += '<td>' + item.product.name + '</td>';
+      html += '<td>' + item.warehouse.name + '</td>';
       html += '<td>' + item.storageLocation + '</td>';
       html += '<td>' + item.quantity + '</td>';
       html += '<td>';
-      html += '<button class="btn btn-sm btn-primary" onclick="editInventory(' + item.id + ')">Edit</button> ';
-      html += '<button class="btn btn-sm btn-danger" onclick="deleteInventory(' + item.id + ')">Delete</button>';
+      html += '<button class="btn btn-sm btn-primary" data-action="edit-inventory" data-id="' + item.id + '">Edit</button> ';
+      html += '<button class="btn btn-sm btn-danger" data-action="delete-inventory" data-id="' + item.id + '">Delete</button>';
       html += '</td>';
       html += '</tr>';
     }
@@ -330,6 +354,7 @@ function showInventoryForm(itemId) {
     }
   }
 }
+
 async function saveInventory() {
   const sku = document.getElementById('itemSKU').value;
   const name = document.getElementById('itemName').value;
@@ -391,7 +416,6 @@ async function saveInventory() {
   showDashboard();
 }
 
-
 function editInventory(id) {
   showInventoryForm(id);
 }
@@ -417,7 +441,7 @@ async function deleteInventory(id) {
 
     if (response.ok) {
       showMessage('Item deleted!');
-      await loadInventory(); // reload from server
+      await loadInventory();
     } else {
       showMessage('Error deleting item!');
     }
@@ -447,7 +471,7 @@ async function submitTransfer() {
   const body = {
     inventoryId: inventoryId,
     sourceWarehouseId: item.warehouse.id,
-    targetWarehouseId: targetWarehouseId,
+    destinationWarehouseId: targetWarehouseId,
     quantity: quantity
   };
 
@@ -461,7 +485,7 @@ async function submitTransfer() {
     if (res.ok) {
       showMessage('Transfer successful!');
       hideTransferForm();
-      await loadInventory(); // Refresh inventory table
+      await loadInventory();
     } else {
       showMessage('Transfer failed!');
     }
@@ -470,7 +494,6 @@ async function submitTransfer() {
     showMessage('Error during transfer!');
   }
 }
-
 
 // Show reports
 function showReports() {
@@ -510,7 +533,6 @@ function showReports() {
 // Setup navigation
 function setupNavigation() {
   const navLinks = document.querySelectorAll('.nav-link[data-page]');
-  
   for (let i = 0; i < navLinks.length; i++) {
     navLinks[i].onclick = function(e) {
       e.preventDefault();
@@ -519,10 +541,8 @@ function setupNavigation() {
       for (let j = 0; j < navLinks.length; j++) {
         navLinks[j].classList.remove('active');
       }
-      
       // Add active to clicked
       this.classList.add('active');
-      
       // Show the section
       const page = this.getAttribute('data-page');
       showSection(page);
@@ -530,120 +550,51 @@ function setupNavigation() {
   }
 }
 
-// Start the app
-function init() {
-  // Create the page sections
-  const container = document.getElementById('pageContainer');
-  container.innerHTML = `
-    <div id="dashboardSection"></div>
-    <div id="warehousesSection" style="display:none;"></div>
-    <div id="inventorySection" style="display:none;"></div>
-    <div id="reportsSection" style="display:none;"></div>
+// EVENT DELEGATION - Single event listener for all dynamic buttons
+function setupEventDelegation() {
+  // Handle warehouse section clicks
+  document.getElementById('warehousesSection').addEventListener('click', function(e) {
+    const target = e.target;
+    const action = target.getAttribute('data-action');
+    const id = target.getAttribute('data-id');
     
-    <!-- Warehouse Form -->
-    <div id="warehouseFormDiv" style="display:none;" class="card p-3 mb-3">
-      <h4>Warehouse Form</h4>
-      <input type="hidden" id="editWarehouseId">
-      <div class="mb-2">
-        <label>Name:</label>
-        <input type="text" id="warehouseName" class="form-control">
-      </div>
-      <div class="mb-2">
-        <label>Location:</label>
-        <input type="text" id="warehouseLocation" class="form-control">
-      </div>
-      <div class="mb-2">
-        <label>Capacity:</label>
-        <input type="number" id="warehouseCapacity" class="form-control">
-      </div>
-      <button class="btn btn-success" onclick="saveWarehouse()">Save</button>
-      <button class="btn btn-secondary" onclick="hideWarehouseForm()">Cancel</button>
-    </div>
-    
-    <!-- Inventory Form -->
-    <div id="inventoryFormDiv" style="display:none;" class="card p-3 mb-3">
-      <h4>Inventory Form</h4>
-      <input type="hidden" id="editItemId">
-      
-      <div class="mb-2">
-        <label>SKU:</label>
-        <input type="text" id="itemSKU" class="form-control">
-      </div>
-      
-      <div class="mb-2">
-        <label>Name:</label>
-        <input type="text" id="itemName" class="form-control">
-      </div>
-      
-      <div class="mb-2">
-        <label>Manufacturer:</label>
-        <input type="text" id="itemManufacturer" class="form-control">
-      </div>
-
-      <div class="mb-2">
-        <label>Description:</label>
-        <textarea id="itemDescription" class="form-control"></textarea>
-      </div>
-      
-      <div class="mb-2">
-        <label>Warehouse:</label>
-        <select id="itemWarehouse" class="form-control"></select>
-      </div>
-      
-      <div class="mb-2">
-        <label>Storage Location:</label>
-        <input type="text" id="itemStorageLocation" class="form-control">
-      </div>
-      
-      <div class="mb-2">
-        <label>Quantity:</label>
-        <input type="number" id="itemQuantity" class="form-control">
-      </div>
-      
-      <button class="btn btn-success" onclick="saveInventory()">Save</button>
-      <button class="btn btn-secondary" onclick="hideInventoryForm()">Cancel</button>
-    </div>
-
-    <!-- Transfer Form -->
-    <div id="transferFormDiv" style="display:none;" class="card p-3 mb-3">
-      <h4>Transfer Inventory</h4>
-      <input type="hidden" id="transferItemId">
-      
-      <div class="mb-2">
-        <label>Quantity:</label>
-        <input type="number" id="transferQuantity" class="form-control">
-      </div>
-      
-      <div class="mb-2">
-        <label>Target Warehouse:</label>
-        <select id="transferTargetWarehouse" class="form-control"></select>
-      </div>
-      
-      <button class="btn btn-success" onclick="submitTransfer()">Transfer</button>
-      <button class="btn btn-secondary" onclick="hideTransferForm()">Cancel</button>
-    </div>
-
-  `;
+    if (action === 'add-warehouse') {
+      showWarehouseForm();
+    } else if (action === 'edit-warehouse') {
+      editWarehouse(parseInt(id));
+    } else if (action === 'delete-warehouse') {
+      deleteWarehouse(parseInt(id));
+    }
+  });
   
+  // Handle inventory section clicks
+  document.getElementById('inventorySection').addEventListener('click', function(e) {
+    const target = e.target;
+    const action = target.getAttribute('data-action');
+    const id = target.getAttribute('data-id');
+    
+    if (action === 'add-inventory') {
+      showInventoryForm();
+    } else if (action === 'edit-inventory') {
+      editInventory(parseInt(id));
+    } else if (action === 'delete-inventory') {
+      deleteInventory(parseInt(id));
+    } else if (action === 'show-transfer') {
+      showTransferForm();
+    }
+  });
+  
+  // Handle form button clicks
+  document.querySelector('[onclick*="saveWarehouse"]')?.addEventListener('click', saveWarehouse);
+  document.querySelector('[onclick*="hideWarehouseForm"]')?.addEventListener('click', hideWarehouseForm);
+  document.querySelector('[onclick*="saveInventory"]')?.addEventListener('click', saveInventory);
+  document.querySelector('[onclick*="hideInventoryForm"]')?.addEventListener('click', hideInventoryForm);
+  document.querySelector('[onclick*="submitTransfer"]')?.addEventListener('click', submitTransfer);
+  document.querySelector('[onclick*="hideTransferForm"]')?.addEventListener('click', hideTransferForm);
+}
+
   setupNavigation();
+  setupEventDelegation();
   loadWarehouses();
   loadInventory();
   showDashboard();
-}
-
-// Start everything when page loads
-init();
-
-window.showWarehouseForm = showWarehouseForm;
-window.editWarehouse = editWarehouse;
-window.deleteWarehouse = deleteWarehouse;
-window.showInventoryForm = showInventoryForm;
-window.editInventory = editInventory;
-window.deleteInventory = deleteInventory;
-window.saveWarehouse = saveWarehouse;
-window.saveInventory = saveInventory;
-window.hideWarehouseForm = hideWarehouseForm;
-window.hideInventoryForm = hideInventoryForm;
-window.showTransferForm = showTransferForm;
-window.hideTransferForm = hideTransferForm;
-window.submitTransfer = submitTransfer;
