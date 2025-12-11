@@ -19,10 +19,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer>{
     @Query("""
         SELECT i FROM Inventory i
         WHERE i.warehouse.id = :warehouseId
-            AND (:name IS NULL OR LOWER(i.product.name) LIKE LOWER(CONCAT('%', :name, '%')))
-            AND (:sku IS NULL OR LOWER(i.product.sku) LIKE LOWER(CONCAT('%', :sku, '%')))
-            AND (:manufacturer IS NULL OR LOWER(i.product.manufacturer) LIKE LOWER(CONCAT('%', :manufacturer, '%')))
-        """)
+        AND (:name IS NULL OR LOWER(i.product.name) LIKE LOWER(CAST(:name AS text)))
+        AND (:sku IS NULL OR LOWER(i.product.sku) LIKE LOWER(CAST(:sku AS text)))
+        AND (:manufacturer IS NULL OR LOWER(i.product.manufacturer) LIKE LOWER(CAST(:manufacturer AS text)))
+    """)
     List<Inventory> search(
         @Param("warehouseId") int warehouseId,
         @Param("name") String name,

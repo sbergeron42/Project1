@@ -14,11 +14,13 @@ public class WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
     private final InventoryRepository inventoryRepository;
+    private final ActivityLogService activityLogService;
 
     // constructor injection
-    public WarehouseService(WarehouseRepository warehouseRepository, InventoryRepository inventoryRepository) {
+    public WarehouseService(WarehouseRepository warehouseRepository, InventoryRepository inventoryRepository, ActivityLogService activityLogService) {
         this.warehouseRepository = warehouseRepository;
         this.inventoryRepository = inventoryRepository;
+        this.activityLogService = activityLogService;
     }
 
     public List<Warehouse> findAllWarehouses() {
@@ -30,7 +32,17 @@ public class WarehouseService {
     }
 
     public Warehouse saveWarehouse(Warehouse warehouse) {
-        return warehouseRepository.save(warehouse);
+        Warehouse saved = warehouseRepository.save(warehouse);
+
+        // makes a log
+        activityLogService.log(
+            "WAREHOUSE_CREATED",
+            "WAREHOUSE",
+            saved.getId(),
+            "Created warehouse '" + saved.getName() + "' at " + saved.getLocation()
+        );
+
+        return saved;
     }
 
     public Warehouse updateWarehouse(int id, Warehouse updated) {
@@ -39,15 +51,36 @@ public class WarehouseService {
                 existing.setName(updated.getName());
                 existing.setLocation(updated.getLocation());
                 existing.setMaxCapacity(updated.getMaxCapacity());
-                return warehouseRepository.save(existing);
+                Warehouse saved = warehouseRepository.save(existing);
+
+                // makes a log
+                activityLogService.log(
+                    "WAREHOUSE_UPDATED",
+                    "WAREHOUSE",
+                    saved.getId(),
+                    "Updated warehouse '" + saved.getName() + "'"
+                );
+                return saved;
             })
+
+        
             .orElse(null);
     }
 
     public int deleteWarehouse(int warehouseId) {
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
         if (warehouse != null) {
+            String name = warehouse.getName();
             warehouseRepository.delete(warehouse);
+
+            // makes a log
+            activityLogService.log(
+                "WAREHOUSE_DELETED",
+                "WAREHOUSE",
+                warehouseId,
+                "Deleted warehouse '" + name + "'"
+            );
+
             return 1;
         } else return 0;
     }

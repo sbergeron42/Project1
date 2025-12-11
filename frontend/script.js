@@ -33,7 +33,7 @@ function showSection(sectionName) {
   document.getElementById('inventorySection').style.display = 'none';
   document.getElementById('reportsSection').style.display = 'none';
   
-  // Show the one we want
+  // Different tabs
   if (sectionName === 'dashboard') {
     document.getElementById('dashboardSection').style.display = 'block';
     showDashboard();
@@ -54,8 +54,6 @@ function showSection(sectionName) {
 
 // Show dashboard
 function showDashboard() {
-  const container = document.getElementById('dashboardSection');
-  
   let totalWarehouses = warehouses.length;
   let totalItems = inventory.length;
   let totalQuantity = 0;
@@ -63,6 +61,11 @@ function showDashboard() {
   for (let i = 0; i < inventory.length; i++) {
     totalQuantity = totalQuantity + inventory[i].quantity;
   }
+
+  // Update stat cards
+  document.getElementById('totalWarehouses').textContent = totalWarehouses;
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('totalQuantity').textContent = totalQuantity;
 
   // Check for alerts
   let alerts = [];
@@ -79,17 +82,13 @@ function showDashboard() {
     }
   }
   
-  let html = '<h2>Dashboard</h2>';
-  
-  // Alerts card
-  html += '<div class="card mb-3">';
-  html += '<div class="card-body">';
-  html += '<h5>Alerts</h5>';
+  // Update alerts container
+  const alertsContainer = document.getElementById('alertsContainer');
   
   if (alerts.length === 0) {
-    html += '<p class="mb-0 text-muted">No recent alerts</p>';
+    alertsContainer.innerHTML = '<p class="mb-0 text-muted">No recent alerts</p>';
   } else {
-    html += '<div class="alert alert-warning mb-0 d-flex justify-content-between align-items-center">';
+    let html = '<div class="alert alert-warning mb-0 d-flex justify-content-between align-items-center">';
     html += '<div>';
     for (let i = 0; i < alerts.length; i++) {
       html += '<strong>' + alerts[i].warehouse + '</strong> is at ' + alerts[i].percentage + '% capacity';
@@ -98,76 +97,55 @@ function showDashboard() {
       }
     }
     html += '</div>';
-    html += '<button class="btn btn-primary btn-sm" onclick="document.querySelector(\'.nav-link[data-page=warehouses]\').click()">Take Action</button>';
+    html += '<button class="btn btn-primary btn-sm" data-action="goto-warehouses">Take Action</button>';
     html += '</div>';
+    alertsContainer.innerHTML = html;
   }
-  
-  html += '</div></div>';
-  
-  // Stats
-  html += '<div class="row">';
-  html += '<div class="col-md-4"><div class="card p-3">';
-  html += '<h5>Warehouses</h5>';
-  html += '<h3>' + totalWarehouses + '</h3>';
-  html += '</div></div>';
-  
-  html += '<div class="col-md-4"><div class="card p-3">';
-  html += '<h5>Inventory Items</h5>';
-  html += '<h3>' + totalItems + '</h3>';
-  html += '</div></div>';
-  
-  html += '<div class="col-md-4"><div class="card p-3">';
-  html += '<h5>Total Quantity</h5>';
-  html += '<h3>' + totalQuantity + '</h3>';
-  html += '</div></div>';
-  html += '</div>';
-  
-  container.innerHTML = html;
+
+  loadRecentActivity();
 }
 
 // Show warehouses list
 function showWarehouses() {
-  const container = document.getElementById('warehousesSection');
-  
-  let html = '<h2>Warehouses</h2>';
-  html += '<button class="btn btn-primary mb-3" data-action="add-warehouse">Add Warehouse</button>';
+  const container = document.getElementById('warehousesListContainer');
   
   if (warehouses.length === 0) {
-    html += '<p>No warehouses yet</p>';
-  } else {
-    html += '<div class="row">';
-    for (let i = 0; i < warehouses.length; i++) {
-      let w = warehouses[i];
-
-      // calculate capacity percentage
-      let percentage = 0;
-      if (w.maxCapacity > 0) {
-        percentage = (w.currentCapacity / w.maxCapacity) * 100;
-      }
-
-      html += '<div class="col-md-4 mb-3">';
-      html += '<div class="card">';
-      html += '<div class="card-body">';
-      html += '<h5>' + w.name + '</h5>';
-      html += '<p>' + w.location + '</p>';
-
-      // capacity info
-      html += '<p><strong>Capacity:</strong> ' + w.currentCapacity + ' / ' + w.maxCapacity + '</p>';
-      html += '<p><strong>Available:</strong> ' + (w.maxCapacity - w.currentCapacity) + '</p>';
-
-      // Simple progress bar
-      html += '<div class="progress mb-2" style="height: 20px;">';
-      html += '<div class="progress-bar" style="width: ' + percentage + '%">';
-      html += Math.round(percentage) + '%';
-      html += '</div>';
-      html += '</div>';
-
-      html += '<button class="btn btn-sm btn-primary" data-action="edit-warehouse" data-id="' + w.id + '">Edit</button> ';
-      html += '<button class="btn btn-sm btn-danger" data-action="delete-warehouse" data-id="' + w.id + '">Delete</button>';
-      html += '</div></div></div>';
-    }
-    html += '</div>';
+    container.innerHTML = '<p>No warehouses yet</p>';
+    return;
   }
+  
+  let html = '<div class="row">';
+  for (let i = 0; i < warehouses.length; i++) {
+    let w = warehouses[i];
+
+    // calculate capacity percentage
+    let percentage = 0;
+    if (w.maxCapacity > 0) {
+      percentage = (w.currentCapacity / w.maxCapacity) * 100;
+    }
+
+    html += '<div class="col-md-4 mb-3">';
+    html += '<div class="card">';
+    html += '<div class="card-body">';
+    html += '<h5>' + w.name + '</h5>';
+    html += '<p>' + w.location + '</p>';
+
+    // capacity info
+    html += '<p><strong>Capacity:</strong> ' + w.currentCapacity + ' / ' + w.maxCapacity + '</p>';
+    html += '<p><strong>Available:</strong> ' + (w.maxCapacity - w.currentCapacity) + '</p>';
+
+    // Simple progress bar
+    html += '<div class="progress mb-2" style="height: 20px;">';
+    html += '<div class="progress-bar" style="width: ' + percentage + '%">';
+    html += Math.round(percentage) + '%';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<button class="btn btn-sm btn-primary" data-action="edit-warehouse" data-id="' + w.id + '">Edit</button> ';
+    html += '<button class="btn btn-sm btn-danger" data-action="delete-warehouse" data-id="' + w.id + '">Delete</button>';
+    html += '</div></div></div>';
+  }
+  html += '</div>';
   
   container.innerHTML = html;
 }
@@ -326,51 +304,48 @@ async function deleteWarehouse(id) {
 }
 
 function showInventory() {
-  const container = document.getElementById('inventorySection');
-
-  let html = '<h2>Inventory</h2>';
-  html += '<button class="btn btn-primary mb-3" data-action="add-inventory">Add Item</button> ';
-  html += '<button class="btn btn-info mb-3" data-action="show-transfer">Transfer</button>';
+  const container = document.getElementById('inventoryListContainer');
 
   if (inventory.length === 0) {
-    html += '<p>No inventory items yet</p>';
-  } else {
-    // Sort inventory by warehouse name, then by ID within each warehouse
-    let sortedInventory = [];
-    for (let i = 0; i < inventory.length; i++) {
-      sortedInventory.push(inventory[i]);
+    container.innerHTML = '<p>No inventory items yet</p>';
+    return;
+  }
+  
+  // Sort inventory by warehouse name, then by ID within each warehouse
+  let sortedInventory = [];
+  for (let i = 0; i < inventory.length; i++) {
+    sortedInventory.push(inventory[i]);
+  }
+  
+  sortedInventory.sort((a, b) => {
+    if (a.warehouse.name !== b.warehouse.name) {
+      return a.warehouse.name.localeCompare(b.warehouse.name);
     }
-    
-    sortedInventory.sort((a, b) => {
-      if (a.warehouse.name !== b.warehouse.name) {
-        return a.warehouse.name.localeCompare(b.warehouse.name);
-      }
-      return a.id - b.id;
-    });
-    
-    html += '<table class="table">';
-    html += '<tr><th>ID</th><th>SKU</th><th>Name</th><th>Warehouse</th><th>Storage Location</th><th>Quantity</th><th>Actions</th></tr>';
+    return a.id - b.id;
+  });
+  
+  let html = '<table class="table">';
+  html += '<thead><tr><th>ID</th><th>SKU</th><th>Name</th><th>Warehouse</th><th>Storage Location</th><th>Quantity</th><th>Actions</th></tr></thead>';
+  html += '<tbody>';
 
-    for (let i = 0; i < sortedInventory.length; i++) {
-      let item = sortedInventory[i];
+  for (let i = 0; i < sortedInventory.length; i++) {
+    let item = sortedInventory[i];
 
-      html += '<tr>';
-      html += '<td>' + item.id + '</td>';
-      html += '<td>' + item.product.sku + '</td>';
-      html += '<td>' + item.product.name + '</td>';
-      html += '<td>' + item.warehouse.name + '</td>';
-      html += '<td>' + item.storageLocation + '</td>';
-      html += '<td>' + item.quantity + '</td>';
-      html += '<td>';
-      html += '<button class="btn btn-sm btn-primary" data-action="edit-inventory" data-id="' + item.id + '">Edit</button> ';
-      html += '<button class="btn btn-sm btn-danger" data-action="delete-inventory" data-id="' + item.id + '">Delete</button>';
-      html += '</td>';
-      html += '</tr>';
-    }
-
-    html += '</table>';
+    html += '<tr>';
+    html += '<td>' + item.id + '</td>';
+    html += '<td>' + item.product.sku + '</td>';
+    html += '<td>' + item.product.name + '</td>';
+    html += '<td>' + item.warehouse.name + '</td>';
+    html += '<td>' + item.storageLocation + '</td>';
+    html += '<td>' + item.quantity + '</td>';
+    html += '<td>';
+    html += '<button class="btn btn-sm btn-primary" data-action="edit-inventory" data-id="' + item.id + '">Edit</button> ';
+    html += '<button class="btn btn-sm btn-danger" data-action="delete-inventory" data-id="' + item.id + '">Delete</button>';
+    html += '</td>';
+    html += '</tr>';
   }
 
+  html += '</tbody></table>';
   container.innerHTML = html;
 }
 
@@ -553,15 +528,79 @@ async function submitTransfer() {
   }
 }
 
-// Show reports
-function showReports() {
-  const container = document.getElementById('reportsSection');
+async function loadRecentActivity() {
+  try {
+    const res = await fetch('http://localhost:8282/activity');
+    if (!res.ok) {
+      throw new Error('Failed to load activity');
+    }
+    const activities = await res.json();
+    
+    const container = document.getElementById('recentActivityContainer');
+    
+    if (activities.length === 0) {
+      container.innerHTML = '<p class="text-muted mb-0">No recent activity</p>';
+      return;
+    }
+    
+    let html = '<ul class="list-group list-group-flush">';
+    
+    // Show only the 10 most recent activities
+    const displayCount = Math.min(activities.length, 10);
+    for (let i = 0; i < displayCount; i++) {
+      const activity = activities[i];
+      html += '<li class="list-group-item px-0">';
+      html += '<small class="text-muted">' + formatActivityDate(activity.createdAt) + '</small><br>';
+      html += '<span>' + activity.description + '</span>';
+      html += '</li>';
+    }
+    
+    html += '</ul>';
+    container.innerHTML = html;
+    
+  } catch (err) {
+    console.error('Error loading activity:', err);
+    document.getElementById('recentActivityContainer').innerHTML = 
+      '<p class="text-danger mb-0">Failed to load activity</p>';
+  }
+}
+
+// Format the date/time for activity display
+function formatActivityDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
   
-  let html = '<h2>Reports</h2>';
-  html += '<div class="card"><div class="card-body">';
-  html += '<h5>Inventory by Warehouse</h5>';
-  html += '<table class="table">';
-  html += '<tr><th>Warehouse</th><th>Items</th><th>Total Quantity</th></tr>';
+  if (diffMins < 1) {
+    return 'Just now';
+  } else if (diffMins < 60) {
+    return diffMins + ' minute' + (diffMins === 1 ? '' : 's') + ' ago';
+  } else if (diffHours < 24) {
+    return diffHours + ' hour' + (diffHours === 1 ? '' : 's') + ' ago';
+  } else if (diffDays < 7) {
+    return diffDays + ' day' + (diffDays === 1 ? '' : 's') + ' ago';
+  } else {
+    // Format as date for older items
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+// Show reports
+async function showReports() {
+  // Populate warehouse selector
+  const warehouseSelector = document.getElementById('warehouseSelector');
+  let options = '<option value="">-- Choose a warehouse --</option>';
+  for (let i = 0; i < warehouses.length; i++) {
+    options += '<option value="' + warehouses[i].id + '">' + warehouses[i].name + '</option>';
+  }
+  warehouseSelector.innerHTML = options;
+  
+  // Populate inventory by warehouse table
+  const tableBody = document.getElementById('inventoryByWarehouseTableBody');
+  let html = '';
   
   for (let i = 0; i < warehouses.length; i++) {
     let w = warehouses[i];
@@ -569,23 +608,126 @@ function showReports() {
     let totalQty = 0;
     
     for (let j = 0; j < inventory.length; j++) {
-      if (inventory[j].warehouseId === w.id) {
+      if (inventory[j].warehouse.id === w.id) {
         itemCount++;
         totalQty += inventory[j].quantity;
       }
     }
     
+    let capacityPercentage = w.maxCapacity > 0 ? Math.round((w.currentCapacity / w.maxCapacity) * 100) : 0;
+    
     html += '<tr>';
     html += '<td>' + w.name + '</td>';
     html += '<td>' + itemCount + '</td>';
     html += '<td>' + totalQty + '</td>';
+    html += '<td>' + capacityPercentage + '%</td>';
     html += '</tr>';
   }
   
-  html += '</table>';
-  html += '</div></div>';
+  tableBody.innerHTML = html;
+}
+
+// Load capacity trend for selected warehouse
+async function loadCapacityTrend() {
+  const warehouseId = document.getElementById('warehouseSelector').value;
+  const days = document.getElementById('daysSelector').value;
+  const container = document.getElementById('capacityTrendContainer');
   
-  container.innerHTML = html;
+  if (!warehouseId) {
+    container.innerHTML = '<p class="text-warning">Please select a warehouse</p>';
+    return;
+  }
+  
+  container.innerHTML = '<p class="text-muted">Loading trend data...</p>';
+  
+  try {
+    const res = await fetch(`http://localhost:8282/capacity-reports/warehouse/${warehouseId}?days=${days}`);
+    if (!res.ok) {
+      throw new Error('Failed to load capacity trend');
+    }
+    
+    const snapshots = await res.json();
+    
+    if (snapshots.length === 0) {
+      container.innerHTML = '<p class="text-muted">No snapshot data available for this warehouse</p>';
+      return;
+    }
+    
+    // Find warehouse name
+    let warehouseName = '';
+    for (let i = 0; i < warehouses.length; i++) {
+      if (warehouses[i].id == warehouseId) {
+        warehouseName = warehouses[i].name;
+        break;
+      }
+    }
+    
+    // Display the data
+    let html = '<h6 class="mt-3">Capacity Trend: ' + warehouseName + '</h6>';
+    html += '<div class="table-responsive">';
+    html += '<table class="table table-sm">';
+    html += '<thead>';
+    html += '<tr>';
+    html += '<th>Date</th>';
+    html += '<th>Current Capacity</th>';
+    html += '<th>Max Capacity</th>';
+    html += '<th>Utilization</th>';
+    html += '</tr>';
+    html += '</thead>';
+    html += '<tbody>';
+    
+    // Reverse to show most recent first
+    for (let i = snapshots.length - 1; i >= 0; i--) {
+      const snapshot = snapshots[i];
+      const date = new Date(snapshot.snapshotDate);
+      const formattedDate = date.toLocaleDateString();
+      
+      // Color code utilization
+      let utilizationClass = '';
+      if (snapshot.utilizationPercentage >= 90) {
+        utilizationClass = 'text-danger fw-bold';
+      } else if (snapshot.utilizationPercentage >= 75) {
+        utilizationClass = 'text-warning';
+      } else {
+        utilizationClass = 'text-success';
+      }
+      
+      html += '<tr>';
+      html += '<td>' + formattedDate + '</td>';
+      html += '<td>' + snapshot.currentCapacity + '</td>';
+      html += '<td>' + snapshot.maxCapacity + '</td>';
+      html += '<td class="' + utilizationClass + '">' + snapshot.utilizationPercentage.toFixed(1) + '%</td>';
+      html += '</tr>';
+    }
+    
+    html += '</tbody>';
+    html += '</table>';
+    html += '</div>';
+    
+    // Add simple text-based trend analysis
+    if (snapshots.length >= 2) {
+      const oldest = snapshots[0];
+      const newest = snapshots[snapshots.length - 1];
+      const change = newest.utilizationPercentage - oldest.utilizationPercentage;
+      
+      html += '<div class="alert alert-info mt-3">';
+      html += '<strong>Trend Analysis:</strong> ';
+      if (change > 5) {
+        html += 'Capacity utilization has <strong>increased</strong> by ' + change.toFixed(1) + '% over this period.';
+      } else if (change < -5) {
+        html += 'Capacity utilization has <strong>decreased</strong> by ' + Math.abs(change).toFixed(1) + '% over this period.';
+      } else {
+        html += 'Capacity utilization has remained <strong>relatively stable</strong> over this period.';
+      }
+      html += '</div>';
+    }
+    
+    container.innerHTML = html;
+    
+  } catch (err) {
+    console.error('Error loading capacity trend:', err);
+    container.innerHTML = '<p class="text-danger">Failed to load capacity trend data</p>';
+  }
 }
 
 // Setup navigation
@@ -610,12 +752,13 @@ function setupNavigation() {
 
 // EVENT DELEGATION - Single event listener for all dynamic buttons
 function setupEventDelegation() {
-  // Handle warehouse section clicks
-  document.getElementById('warehousesSection').addEventListener('click', function(e) {
+  // Handle ALL clicks on the document body
+  document.body.addEventListener('click', function(e) {
     const target = e.target;
     const action = target.getAttribute('data-action');
     const id = target.getAttribute('data-id');
     
+    // Warehouse actions
     if (action === 'add-warehouse') {
       showWarehouseForm();
     } else if (action === 'edit-warehouse') {
@@ -623,15 +766,8 @@ function setupEventDelegation() {
     } else if (action === 'delete-warehouse') {
       deleteWarehouse(parseInt(id));
     }
-  });
-  
-  // Handle inventory section clicks
-  document.getElementById('inventorySection').addEventListener('click', function(e) {
-    const target = e.target;
-    const action = target.getAttribute('data-action');
-    const id = target.getAttribute('data-id');
-    
-    if (action === 'add-inventory') {
+    // Inventory actions
+    else if (action === 'add-inventory') {
       showInventoryForm();
     } else if (action === 'edit-inventory') {
       editInventory(parseInt(id));
@@ -640,19 +776,48 @@ function setupEventDelegation() {
     } else if (action === 'show-transfer') {
       showTransferForm();
     }
+    // Dashboard action
+    else if (action === 'goto-warehouses') {
+      document.querySelector('.nav-link[data-page="warehouses"]').click();
+    }
   });
   
-  // Handle form button clicks
-  document.querySelector('[onclick*="saveWarehouse"]')?.addEventListener('click', saveWarehouse);
-  document.querySelector('[onclick*="hideWarehouseForm"]')?.addEventListener('click', hideWarehouseForm);
-  document.querySelector('[onclick*="saveInventory"]')?.addEventListener('click', saveInventory);
-  document.querySelector('[onclick*="hideInventoryForm"]')?.addEventListener('click', hideInventoryForm);
-  document.querySelector('[onclick*="submitTransfer"]')?.addEventListener('click', submitTransfer);
-  document.querySelector('[onclick*="hideTransferForm"]')?.addEventListener('click', hideTransferForm);
+  // Setup form button handlers
+  document.getElementById('warehouseFormDiv').addEventListener('click', function(e) {
+    if (e.target.matches('button[class*="btn-success"]')) {
+      saveWarehouse();
+    } else if (e.target.matches('button[class*="btn-secondary"]')) {
+      hideWarehouseForm();
+    }
+  });
+  
+  document.getElementById('inventoryFormDiv').addEventListener('click', function(e) {
+    if (e.target.matches('button[class*="btn-success"]')) {
+      saveInventory();
+    } else if (e.target.matches('button[class*="btn-secondary"]')) {
+      hideInventoryForm();
+    }
+  });
+  
+  document.getElementById('transferFormDiv').addEventListener('click', function(e) {
+    if (e.target.matches('button[class*="btn-success"]')) {
+      submitTransfer();
+    } else if (e.target.matches('button[class*="btn-secondary"]')) {
+      hideTransferForm();
+    }
+  });
+  
+  // Setup report button handler
+  const reportBtn = document.getElementById('generateReportBtn');
+  if (reportBtn) {
+    reportBtn.addEventListener('click', loadCapacityTrend);
+  }
+
 }
 
-  setupNavigation();
-  setupEventDelegation();
-  loadWarehouses();
-  loadInventory();
-  showDashboard();
+// Initialize the application
+setupNavigation();
+setupEventDelegation();
+loadWarehouses();
+loadInventory();
+showDashboard();

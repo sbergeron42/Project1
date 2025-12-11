@@ -23,12 +23,14 @@ public class InventoryService {
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final WarehouseRepository warehouseRepository;
+    private final ActivityLogService activityLogService;
 
     // constructor injection
-    public InventoryService(InventoryRepository inventoryRepository, WarehouseRepository warehouseRepository, ProductRepository productRepository) {
+    public InventoryService(InventoryRepository inventoryRepository, WarehouseRepository warehouseRepository, ProductRepository productRepository, ActivityLogService activityLogService) {
         this.inventoryRepository = inventoryRepository;
         this.warehouseRepository = warehouseRepository;
         this.productRepository = productRepository;
+        this.activityLogService = activityLogService;
     }
 
     public List<Inventory> findAllInventories() {
@@ -58,7 +60,19 @@ public class InventoryService {
             request.getQuantity(),
             request.getStorageLocation()
         );
-        return inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
+
+        // makes a log
+        activityLogService.log(
+            "INVENTORY_ADDED",
+            "INVENTORY",
+            saved.getId(),
+            "Added " + saved.getQuantity() + " units of '" + product.getName() + 
+            "' to " + warehouse.getName()
+        );
+
+        return saved;
+    
     }
 
     public Inventory updateInventory(int warehouseId, int inventoryId, Map<String, Object> updates) {
@@ -77,7 +91,18 @@ public class InventoryService {
         if (updates.containsKey("description")) {
             inventory.getProduct().setDescription((String) updates.get("description"));
         }
-        return inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
+
+        // makes a log
+        activityLogService.log(
+            "INVENTORY_UPDATED",
+            "INVENTORY",
+            saved.getId(),
+            "Updated '" + saved.getProduct().getName() + "' in " + saved.getWarehouse().getName()
+        );
+
+        return saved;
+
     }
 
 
@@ -90,6 +115,18 @@ public class InventoryService {
                 throw new IllegalArgumentException("Item does not belong to this warehouse");
             }
         }
+
+        // makes a log
+        for (Inventory item : items) {
+            activityLogService.log(
+                "INVENTORY_DELETED",
+                "INVENTORY",
+                item.getId(),
+                "Deleted " + item.getQuantity() + " units of '" + 
+                item.getProduct().getName() + "' from " + item.getWarehouse().getName()
+            );
+        }
+
         inventoryRepository.deleteAllInBatch(items);
     }
 
@@ -144,6 +181,15 @@ public class InventoryService {
         destinationInventory.setQuantity(destinationInventory.getQuantity() + request.getQuantity());
         inventoryRepository.save(destinationInventory);
 
+        // makes a log
+        activityLogService.log(
+            "INVENTORY_TRANSFERRED",
+            "INVENTORY",
+            request.getInventoryId(),
+            "Transferred " + request.getQuantity() + " units of '" + product.getName() + 
+            "' from " + sourceWarehouse.getName() + " to " + destinationWarehouse.getName()
+        );
+        
         return Map.of(
             "sourceInventories", sourceInventories.stream().filter(i -> i.getQuantity() > 0).collect(Collectors.toList()),
             "destinationInventory", destinationInventory
