@@ -113,10 +113,24 @@ function showWarehouses() {
     container.innerHTML = '<p>No warehouses yet</p>';
     return;
   }
-  
+
+  // Apply search filter
+  let filteredWarehouses = warehouses;
+  if (warehouseSearchTerm) {
+    filteredWarehouses = warehouses.filter(w => {
+      return w.name.toLowerCase().includes(warehouseSearchTerm) ||
+            w.location.toLowerCase().includes(warehouseSearchTerm);
+    });
+    
+    if (filteredWarehouses.length === 0) {
+      container.innerHTML = '<p class="text-muted">No warehouses found matching your search.</p>';
+      return;
+    }
+  }
+    
   let html = '<div class="row">';
-  for (let i = 0; i < warehouses.length; i++) {
-    let w = warehouses[i];
+  for (let i = 0; i < filteredWarehouses.length; i++) {
+    let w = filteredWarehouses[i];
 
     // calculate capacity percentage
     let percentage = 0;
@@ -134,11 +148,39 @@ function showWarehouses() {
     html += '<p><strong>Capacity:</strong> ' + w.currentCapacity + ' / ' + w.maxCapacity + '</p>';
     html += '<p><strong>Available:</strong> ' + (w.maxCapacity - w.currentCapacity) + '</p>';
 
-    // Simple progress bar
+    // progress bar
     html += '<div class="progress mb-2" style="height: 20px;">';
     html += '<div class="progress-bar" style="width: ' + percentage + '%">';
     html += Math.round(percentage) + '%';
     html += '</div>';
+    html += '</div>';
+
+    html += '<button class="btn btn-sm btn-outline-secondary w-100 mb-2" data-action="toggle-inventory" data-warehouse-id="' + w.id + '">';
+    html += 'View Items <span class="toggle-icon">▼</span>';
+    html += '</button>';
+
+    html += '<div class="warehouse-inventory-list" id="inventory-list-' + w.id + '" style="display: none;">';
+    // Filter and display items for this warehouse
+    let warehouseItems = inventory.filter(item => item.warehouse.id === w.id);
+    if (warehouseItems.length === 0) {
+      html += '<p class="text-muted small mb-2">No items in this warehouse</p>';
+    } else {
+      html += '<div class="table-responsive"><table class="table table-sm table-striped mb-2">';
+      html += '<thead><tr><th>SKU</th><th>Name</th><th>Location</th><th>Qty</th></tr></thead>';
+      html += '<tbody>';
+
+      for (let j = 0; j < warehouseItems.length; j++) {
+        let item = warehouseItems[j];
+        html += '<tr>';
+        html += '<td>' + item.product.sku + '</td>';
+        html += '<td>' + item.product.name + '</td>';
+        html += '<td>' + item.storageLocation + '</td>';
+        html += '<td>' + item.quantity + '</td>';
+        html += '</tr>';
+      }
+      
+      html += '</tbody></table></div>';
+    }
     html += '</div>';
 
     html += '<button class="btn btn-sm btn-primary" data-action="edit-warehouse" data-id="' + w.id + '">Edit</button> ';
@@ -311,21 +353,51 @@ function showInventory() {
     return;
   }
   
-  // Sort inventory by warehouse name, then by ID within each warehouse
+  // Create a copy for display
   let sortedInventory = [];
   for (let i = 0; i < inventory.length; i++) {
     sortedInventory.push(inventory[i]);
   }
   
-  sortedInventory.sort((a, b) => {
-    if (a.warehouse.name !== b.warehouse.name) {
-      return a.warehouse.name.localeCompare(b.warehouse.name);
+  // Apply search filter
+  if (inventorySearchTerm) {
+    let filtered = [];
+    for (let i = 0; i < sortedInventory.length; i++) {
+      const item = sortedInventory[i];
+      const matchesSKU = item.product.sku.toLowerCase().includes(inventorySearchTerm);
+      const matchesName = item.product.name.toLowerCase().includes(inventorySearchTerm);
+      const matchesWarehouse = item.warehouse.name.toLowerCase().includes(inventorySearchTerm);
+      const matchesLocation = item.storageLocation.toLowerCase().includes(inventorySearchTerm);
+      
+      if (matchesSKU || matchesName || matchesWarehouse || matchesLocation) {
+        filtered.push(item);
+      }
     }
-    return a.id - b.id;
-  });
+    sortedInventory = filtered;
+  }
+  
+  // Only apply default sort if no sort state exists yet
+  if (!inventorySortState.column) {
+    sortedInventory.sort((a, b) => {
+      if (a.warehouse.name !== b.warehouse.name) {
+        return a.warehouse.name.localeCompare(b.warehouse.name);
+      }
+      return a.id - b.id;
+    });
+  }
+  // Otherwise inventory array is already sorted by sortInventory()
+  else {
+    sortedInventory = inventory;
+  }
+  
+  // Show message if no results found after filtering
+  if (sortedInventory.length === 0) {
+    container.innerHTML = '<p class="text-muted">No items found matching your search.</p>';
+    return;
+  }
   
   let html = '<table class="table">';
-  html += '<thead><tr><th>ID</th><th>SKU</th><th>Name</th><th>Warehouse</th><th>Storage Location</th><th>Quantity</th><th>Actions</th></tr></thead>';
+  html += '<thead><tr><th data-column="id">ID</th><th data-column="sku">SKU</th><th data-column="name">Name</th><th data-column="warehouse">Warehouse</th><th data-column="storageLocation">Storage Location</th><th data-column="quantity">Quantity</th><th>Actions</th></tr></thead>';
   html += '<tbody>';
 
   for (let i = 0; i < sortedInventory.length; i++) {
@@ -347,6 +419,15 @@ function showInventory() {
 
   html += '</tbody></table>';
   container.innerHTML = html;
+
+  // Set up click handlers - use querySelectorAll to get only the headers in inventory section
+  document.querySelectorAll('#inventoryListContainer th[data-column]').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.onclick = () => {
+      const column = th.getAttribute('data-column');
+      sortInventory(column);
+    };
+  });
 }
 
 // Show inventory form
@@ -386,6 +467,75 @@ function showInventoryForm(itemId) {
       }
     }
   }
+}
+
+let inventorySearchTerm = '';
+let warehouseSearchTerm = '';
+
+function searchInventory() {
+  const searchInput = document.getElementById('inventorySearchInput');
+  inventorySearchTerm = searchInput.value.toLowerCase().trim();
+  showInventory();
+}
+
+function searchWarehouses() {
+  const searchInput = document.getElementById('warehouseSearchInput');
+  warehouseSearchTerm = searchInput.value.toLowerCase().trim();
+  showWarehouses();
+}
+
+
+let inventorySortState = {
+  column: null, // currently sorted column
+  ascending: true
+};
+
+function sortInventory(column) {
+  if (inventorySortState.column === column) {
+    // Toggle direction
+    inventorySortState.ascending = !inventorySortState.ascending;
+  } else {
+    inventorySortState.column = column;
+    inventorySortState.ascending = true;
+  }
+
+  inventory.sort((a, b) => {
+    let valA, valB;
+
+    switch(column) {
+      case 'id':
+      case 'quantity':
+        valA = a[column];
+        valB = b[column];
+        return inventorySortState.ascending ? valA - valB : valB - valA;
+
+      case 'sku':
+        valA = a.product.sku.toLowerCase();
+        valB = b.product.sku.toLowerCase();
+        break;
+
+      case 'name':
+        valA = a.product.name.toLowerCase();
+        valB = b.product.name.toLowerCase();
+        break;
+
+      case 'warehouse':
+        valA = a.warehouse.name.toLowerCase();
+        valB = b.warehouse.name.toLowerCase();
+        break;
+
+      case 'storageLocation':
+        valA = a.storageLocation.toLowerCase();
+        valB = b.storageLocation.toLowerCase();
+        break;
+    }
+
+    if (valA < valB) return inventorySortState.ascending ? -1 : 1;
+    if (valA > valB) return inventorySortState.ascending ? 1 : -1;
+    return 0;
+  });
+
+  showInventory(); // Re-render table with sorted data
 }
 
 async function saveInventory() {
@@ -765,7 +915,20 @@ function setupEventDelegation() {
       editWarehouse(parseInt(id));
     } else if (action === 'delete-warehouse') {
       deleteWarehouse(parseInt(id));
+    } else if (action === 'toggle-inventory') {
+      const warehouseId = target.getAttribute('data-warehouse-id');
+      const listDiv = document.getElementById('inventory-list-' + warehouseId);
+      const icon = target.querySelector('.toggle-icon');
+      
+      if (listDiv.style.display === 'none') {
+        listDiv.style.display = 'block';
+        icon.textContent = '▲';
+      } else {
+        listDiv.style.display = 'none';
+        icon.textContent = '▼';
+      }
     }
+
     // Inventory actions
     else if (action === 'add-inventory') {
       showInventoryForm();
@@ -806,6 +969,9 @@ function setupEventDelegation() {
       hideTransferForm();
     }
   });
+
+  document.getElementById('inventorySearchInput').addEventListener('input', searchInventory);
+  document.getElementById('warehouseSearchInput').addEventListener('input', searchWarehouses);
   
   // Setup report button handler
   const reportBtn = document.getElementById('generateReportBtn');

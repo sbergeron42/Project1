@@ -111,6 +111,17 @@
         <div id="warehousesSection" style="display:none;">
             <h2>Warehouses</h2>
             <button class="btn btn-primary mb-3" data-action="add-warehouse">Add Warehouse</button>
+            
+            <!-- Warehouse Search bar -->
+            <div class="mb-3">
+                <input 
+                    type="text" 
+                    id="warehouseSearchInput" 
+                    class="form-control" 
+                    placeholder="Search by warehouse name or location..."
+                >
+            </div>
+            
             <div id="warehousesListContainer">
                 <p>No warehouses yet</p>
             </div>
@@ -121,6 +132,17 @@
             <h2>Inventory</h2>
             <button class="btn btn-primary mb-3" data-action="add-inventory">Add Item</button>
             <button class="btn btn-info mb-3" data-action="show-transfer">Transfer</button>
+            
+            <!-- Inventory Search bar -->
+            <div class="mb-3">
+                <input 
+                    type="text" 
+                    id="inventorySearchInput" 
+                    class="form-control" 
+                    placeholder="Search by SKU, Name, Warehouse, or Storage Location..."
+                >
+            </div>
+            
             <div id="inventoryListContainer">
                 <p>No inventory items yet</p>
             </div>
