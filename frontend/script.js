@@ -63,8 +63,48 @@ function showDashboard() {
   for (let i = 0; i < inventory.length; i++) {
     totalQuantity = totalQuantity + inventory[i].quantity;
   }
+
+  // Check for alerts
+  let alerts = [];
+  for (let i = 0; i < warehouses.length; i++) {
+    let w = warehouses[i];
+    if (w.maxCapacity > 0) {
+      let percentage = (w.currentCapacity / w.maxCapacity) * 100;
+      if (percentage >= 90) {
+        alerts.push({
+          warehouse: w.name,
+          percentage: Math.round(percentage)
+        });
+      }
+    }
+  }
   
   let html = '<h2>Dashboard</h2>';
+  
+  // Alerts card
+  html += '<div class="card mb-3">';
+  html += '<div class="card-body">';
+  html += '<h5>Alerts</h5>';
+  
+  if (alerts.length === 0) {
+    html += '<p class="mb-0 text-muted">No recent alerts</p>';
+  } else {
+    html += '<div class="alert alert-warning mb-0 d-flex justify-content-between align-items-center">';
+    html += '<div>';
+    for (let i = 0; i < alerts.length; i++) {
+      html += '<strong>' + alerts[i].warehouse + '</strong> is at ' + alerts[i].percentage + '% capacity';
+      if (i < alerts.length - 1) {
+        html += '<br>';
+      }
+    }
+    html += '</div>';
+    html += '<button class="btn btn-primary btn-sm" onclick="document.querySelector(\'.nav-link[data-page=warehouses]\').click()">Take Action</button>';
+    html += '</div>';
+  }
+  
+  html += '</div></div>';
+  
+  // Stats
   html += '<div class="row">';
   html += '<div class="col-md-4"><div class="card p-3">';
   html += '<h5>Warehouses</h5>';
@@ -98,12 +138,30 @@ function showWarehouses() {
     html += '<div class="row">';
     for (let i = 0; i < warehouses.length; i++) {
       let w = warehouses[i];
+
+      // calculate capacity percentage
+      let percentage = 0;
+      if (w.maxCapacity > 0) {
+        percentage = (w.currentCapacity / w.maxCapacity) * 100;
+      }
+
       html += '<div class="col-md-4 mb-3">';
       html += '<div class="card">';
       html += '<div class="card-body">';
       html += '<h5>' + w.name + '</h5>';
       html += '<p>' + w.location + '</p>';
-      html += '<p>Capacity: ' + w.maxCapacity + '</p>';
+
+      // capacity info
+      html += '<p><strong>Capacity:</strong> ' + w.currentCapacity + ' / ' + w.maxCapacity + '</p>';
+      html += '<p><strong>Available:</strong> ' + (w.maxCapacity - w.currentCapacity) + '</p>';
+
+      // Simple progress bar
+      html += '<div class="progress mb-2" style="height: 20px;">';
+      html += '<div class="progress-bar" style="width: ' + percentage + '%">';
+      html += Math.round(percentage) + '%';
+      html += '</div>';
+      html += '</div>';
+
       html += '<button class="btn btn-sm btn-primary" data-action="edit-warehouse" data-id="' + w.id + '">Edit</button> ';
       html += '<button class="btn btn-sm btn-danger" data-action="delete-warehouse" data-id="' + w.id + '">Delete</button>';
       html += '</div></div></div>';
