@@ -4,11 +4,22 @@
 
 let warehouses = [];
 let inventory = [];
+let products = [];
 let inventorySearchTerm = '';
 let warehouseSearchTerm = '';
+let productSearchTerm = '';
 let inventorySortState = {
   column: null, // currently sorted column
   ascending: true
+};
+
+const productImages = {
+  'ORI-FUL': 'https://somaticvr.com/assets/products/core-set.webp',
+  'HAR-FUL': 'https://cdn.prod.website-files.com/615ff9cd5c0185a6354c51b8/69044ec6f8f6622cc0a7a803_73b48e43d156d44ccc9cca61b688f5f7_haritorax2proeyechatch_2.png',
+  'SLI-FUL': 'https://www.crowdsupply.com/img/371f/d186e355-1cef-40e5-bec1-2a728463371f/slimevr-five-units-flat-sept2024_jpg_gallery-lg.jpg',
+  'FLX-FUL' : 'https://static.wixstatic.com/media/6fd1a3_51d56bb207524207b3acf43b7fc9fa09~mv2.png/v1/fill/w_980,h_697,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/Hub8Devices.png',
+  'QSE-FUL' : 'https://qsense-motion.com/wp-content/uploads/2025/04/MG_3998-1-scaled.jpg',
+  'TES-FUL' : 'https://teslasuit.io/wp-content/uploads/MoCap.png'
 };
 
 // ========================================================================================================
@@ -39,10 +50,21 @@ async function loadInventory() {
   showDashboard();
 }
 
+/**
+ * Loads product data from the server and updates the UI
+ */
+async function loadProducts() {
+  const res = await fetch('http://localhost:8282/products');
+  if (!res.ok) {
+    throw new Error('Failed to load products');
+  }
+  products = await res.json();
+  showProducts();
+}
+
 // ========================================================================================================
 // HELPER FUNCTIONS
 // ========================================================================================================
-
 
 /**
  * Shows a simple alert message.
@@ -80,7 +102,22 @@ function showSection(sectionName) {
     document.getElementById('reportsSection').style.display = 'block';
     showReports();
   }
+  if (sectionName === 'products') {
+    document.getElementById('productsSection').style.display = 'block';
+    showProducts();
+  }
 }
+
+/**
+ * Returns the image URL for a given SKU, or a default placeholder
+ */
+function getProductImage(sku) {
+  return productImages[sku] || 'https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg';
+}
+
+// ========================================================================================================
+// DISPLAY FUNCTIONS
+// ========================================================================================================
 
 /**
  * Updates the dashboard statistics, including total warehouses, items, quantities, and alerts.
@@ -987,7 +1024,7 @@ async function loadRecentActivity() {
 }
 
 /**
- * Formats a date string into a human-readable "time ago" format
+ * Formats a date string into a readable "time ago" format
  * @param {string} dateString 
  */
 function formatActivityDate(dateString) {
@@ -1015,7 +1052,7 @@ function formatActivityDate(dateString) {
 }
 
 /**
- * Populates the repors page with warehouse and inventory statistics.
+ * Populates the reports page with warehouse and inventory statistics.
  * Displays inventory count, total quantity, and capacity utilization per warehouse.
  */
 async function showReports() {
@@ -1175,6 +1212,66 @@ async function loadCapacityTrend() {
   }
 }
 
+
+/**
+ * Renders the list of products in the UI with optional search filtering
+ * Displays each product as a card with image and other product fields
+ */
+function showProducts() {
+  const container = document.getElementById('productsListContainer');
+  
+  if (products.length === 0) {
+    container.innerHTML = '<p>No products yet</p>';
+    return;
+  }
+  
+  let filteredProducts = products;
+  if (productSearchTerm) {
+    filteredProducts = products.filter(p => {
+      return p.name.toLowerCase().includes(productSearchTerm) ||
+             p.sku.toLowerCase().includes(productSearchTerm) ||
+             p.manufacturer.toLowerCase().includes(productSearchTerm);
+    });
+    
+    if (filteredProducts.length === 0) {
+      container.innerHTML = '<p class="text-muted">No products found matching your search.</p>';
+      return;
+    }
+  }
+  
+  let html = '<div class="row">';
+  for (let i = 0; i < filteredProducts.length; i++) {
+    let p = filteredProducts[i];
+    
+    html += '<div class="col-md-6 col-lg-4 mb-4">';
+    html += '<div class="card h-100">';
+    html += '<img src="' + getProductImage(p.sku) + '" class="card-img-top" alt="' + p.name + '" style="height: 200px; object-fit: cover;">';
+    html += '<div class="card-body">';
+    html += '<h5 class="card-title">' + p.name + '</h5>';
+    html += '<h6 class="card-subtitle mb-2 text-muted">SKU: ' + p.sku + '</h6>';
+    html += '<p class="card-text"><strong>Manufacturer:</strong> ' + p.manufacturer + '</p>';
+    if (p.description) {
+      html += '<p class="card-text"><small>' + p.description + '</small></p>';
+    }
+    html += '<p class="card-text"><small class="text-muted">ID: ' + p.id + '</small></p>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  
+  container.innerHTML = html;
+}
+
+/**
+ * Updates the product search term based on user input and re-renders the product list
+ */
+function searchProducts() {
+  const searchInput = document.getElementById('productSearchInput');
+  productSearchTerm = searchInput.value.toLowerCase().trim();
+  showProducts();
+}
+
 /**
  * Sets up the navigation tabs for showing different sections.
  */
@@ -1289,6 +1386,7 @@ function setupEventDelegation() {
 
   document.getElementById('inventorySearchInput').addEventListener('input', searchInventory);
   document.getElementById('warehouseSearchInput').addEventListener('input', searchWarehouses);
+  document.getElementById('productSearchInput').addEventListener('input', searchProducts);
   
   /**
    * Setup report button handler
@@ -1310,4 +1408,5 @@ setupNavigation();
 setupEventDelegation();
 loadWarehouses();
 loadInventory();
+loadProducts();
 showDashboard();

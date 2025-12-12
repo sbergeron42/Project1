@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * This is responsible for representinga historical snapshot of a warehouse's capacity on a specific date. 
+ * This is responsible for representing historical snapshot of a warehouse's capacity on a specific date. 
  * Used to track trends in storage usage and utilization over time.
  */
 @Entity

@@ -23,7 +23,7 @@ public interface CapacitySnapshotRepository extends JpaRepository<CapacitySnapsh
     List<CapacitySnapshot> findByWarehouseIdOrderBySnapshotDateDesc(int warehouseId);
 
     /**
-     * Retrives snapshots for a warehouse within a specific date range
+     * Retrieves snapshots for a warehouse within a specific date range
      * @param warehouseId the warehouse ID
      * @param startDate start of date range (inclusive)
      * @param endDate end of date range (inclusive)

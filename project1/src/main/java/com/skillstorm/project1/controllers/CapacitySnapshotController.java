@@ -13,8 +13,8 @@ import com.skillstorm.project1.models.CapacitySnapshot;
 import com.skillstorm.project1.services.CapacitySnapshotService;
 
 /**
- * This controller is responsible for providing capacity report dat for warehouses.
- * It exposes endpionts for retrieving warehouse capacity trends over time. 
+ * This controller is responsible for providing capacity report data for warehouses.
+ * It exposes endpoints for retrieving warehouse capacity trends over time. 
  * Data is captured every night at 12am using a cronjob.
  */
 
