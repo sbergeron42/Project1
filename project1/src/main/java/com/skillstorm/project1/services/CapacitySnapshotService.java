@@ -12,23 +12,35 @@ import com.skillstorm.project1.repositories.CapacitySnapshotRepository;
 import com.skillstorm.project1.repositories.InventoryRepository;
 import com.skillstorm.project1.repositories.WarehouseRepository;
 
+/**
+ * This service is responsible for generating and retrieving warehouse capacity snapshots.
+ * Snapshots represent usage levels taken at a specific point in time.
+ */
 @Service
 public class CapacitySnapshotService {
+    
+    /**
+     * Constructor injection
+     */
     private CapacitySnapshotRepository capacitySnapshotRepository;
     private WarehouseRepository warehouseRepository;
     private InventoryRepository  inventoryRepository;
-
     public CapacitySnapshotService(CapacitySnapshotRepository capacitySnapshotRepository, WarehouseRepository warehouseRepository, InventoryRepository inventoryRepository) {
         this.capacitySnapshotRepository = capacitySnapshotRepository;
         this.warehouseRepository = warehouseRepository;
         this.inventoryRepository = inventoryRepository;
     }
 
-    // Create snapshot for a warehouse
+    /**
+     * Creates a new snapshot for the given warehouse based on its current inventory load and max capacity.
+     * @param warehouseId The ID of the warehouse to capture
+     */
     public void createSnapshot(int warehouseId) {
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow();
         
-        // Calculate current capacity from inventory
+        /**
+         * Calculates capacity from inventory
+         */
         int currentCapacity = inventoryRepository.findByWarehouseId(warehouseId)
             .stream()
             .mapToInt(Inventory::getQuantity)
@@ -44,7 +56,12 @@ public class CapacitySnapshotService {
         capacitySnapshotRepository.save(snapshot);
     }
 
-    // Get trend data for a warehouse
+    /**
+     * Retrieves capacity snapshots for a warehouse over a recent time period.
+     * @param warehouseId The warehouse ID
+     * @param days How far back to retrieve data (inclusive)
+     * @return A chronological list of capacity snapshots
+     */
     public List<CapacitySnapshot> getWarehouseTrend(int warehouseId, int days) {
         LocalDate startDate = LocalDate.now().minusDays(days);
         return capacitySnapshotRepository.findByWarehouseIdAndSnapshotDateBetweenOrderBySnapshotDate(

@@ -11,6 +11,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * This is responsible for representinga historical snapshot of a warehouse's capacity on a specific date. 
+ * Used to track trends in storage usage and utilization over time.
+ */
 @Entity
 @Table(name = "CAPACITY_SNAPSHOTS")
 public class CapacitySnapshot {

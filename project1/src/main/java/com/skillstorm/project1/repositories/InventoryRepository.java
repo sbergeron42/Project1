@@ -10,12 +10,22 @@ import org.springframework.stereotype.Repository;
 
 import com.skillstorm.project1.models.Inventory;
 
+/**
+ * This repository is responsible for managing inventory entries.
+ * Provides search, filtering, and aggregation capabilities.
+ */
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Integer>{
 
-    // for summing inventory by warehouse
+    /**
+     * Retrieves all inventory records for a given warehouse.
+     */
     List<Inventory> findByWarehouseId(int warehouseId);
 
+    /**
+     * Searches inventory within a warehouse using optional filters.
+     * Supports partial matches on product name, SKU, and manufacturer.
+     */
     @Query("""
         SELECT i FROM Inventory i
         WHERE i.warehouse.id = :warehouseId
@@ -32,6 +42,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer>{
         // also keeping this here             AND (:category IS NULL OR LOWER(i.product.category) LIKE LOWER(CONCAT('%', :category, '%')))
     );
 
+    /**
+     * Finds inventory entries for a specific warehouse and product.
+     */
     @Query("SELECT COALESCE(SUM(i.quantity), 0) FROM Inventory i WHERE i.warehouse.id = :warehouseId")
     int sumQuantitiesByWarehouse(int warehouseId);
 

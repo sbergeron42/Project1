@@ -7,6 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Represents a warehouse location used for storing inventory.
+ * Stores metadata such as name, location, and maximum storage capacity.
+ */
 @Entity
 @Table(name = "WAREHOUSES")
 public class Warehouse {
@@ -16,14 +20,12 @@ public class Warehouse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // warehouse name, e.g. Headquarters
     @Column
     private String name;
 
     @Column
     private String location;
 
-    // maybe should have a limit on how high the number can be?
     @Column(name = "max_capacity")
     private int maxCapacity;
 
@@ -113,7 +115,5 @@ public class Warehouse {
             return false;
         return true;
     }
-
-
 
 }

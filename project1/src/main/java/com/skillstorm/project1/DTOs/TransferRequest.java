@@ -1,5 +1,8 @@
 package com.skillstorm.project1.DTOs;
 
+/**
+ * This DTO is responsible for representing a transfer of inventory from one warehouse to another.
+ */
 public class TransferRequest {
 
     private int sourceWarehouseId;

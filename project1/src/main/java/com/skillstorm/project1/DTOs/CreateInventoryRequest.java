@@ -1,5 +1,9 @@
 package com.skillstorm.project1.DTOs;
 
+/**
+ * Request DTO for creating a new inventory item within a warehouse.
+ * Contains product details, quantity, and storage location information.
+ */
 public class CreateInventoryRequest {
 
     private int warehouseId;

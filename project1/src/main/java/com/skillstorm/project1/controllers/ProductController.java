@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+/**
+ * This is a controller responsible for managing product definitions.
+ * Products represent item metadata used by inventories.
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/products")

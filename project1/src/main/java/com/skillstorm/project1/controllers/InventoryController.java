@@ -22,6 +22,11 @@ import com.skillstorm.project1.models.Inventory;
 import com.skillstorm.project1.services.InventoryService;
 import org.springframework.web.bind.annotation.PostMapping;
 
+/**
+ * This controller is responsible for managing inventory items within warehouses.
+ * It provides endpoints for searching, creating, updating, deleting, and transferring inventory.
+ */
+
 @CrossOrigin
 @RestController
 @RequestMapping
@@ -43,6 +48,9 @@ public class InventoryController {
         }
     }
 
+    /**
+     * Searches inventory in a warehouse using optional filters.
+     */
     @GetMapping("/warehouses/{warehouseId}/inventories")
     public ResponseEntity<List<Inventory>> findInventory(
             @PathVariable int warehouseId,
@@ -70,6 +78,9 @@ public class InventoryController {
         }
     }
 
+    /**
+     * Updates specific fields of an inventory item.
+     */
     @PatchMapping("/warehouses/{warehouseId}/inventories/{inventoryId}")
     public ResponseEntity<Inventory> updateInventory(@PathVariable int warehouseId, @PathVariable int inventoryId, @RequestBody Map<String, Object> updates) {
         try {
@@ -97,6 +108,9 @@ public class InventoryController {
     }
 }
 
+    /**
+     * Deprecated
+     */
     /*
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody Product updated) {

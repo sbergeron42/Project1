@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import com.skillstorm.project1.models.Product;
 
+/**
+ * This repository is responsible for accessing and managing product records.
+ */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 

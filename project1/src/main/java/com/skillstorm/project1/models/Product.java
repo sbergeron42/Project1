@@ -7,6 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * This is responsible for representing a product that can be stored in inventory.
+ * Contains details such as name, manufacturer, SKU, and description.
+ */
 @Entity
 // need to see if our db table will match the tablename here
 @Table(name = "PRODUCTS")
@@ -17,7 +21,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // product name
     @Column
     private String name;
     

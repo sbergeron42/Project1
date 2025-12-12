@@ -9,6 +9,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * This is responsible for representing a log entry describing an action performed in the system.
+ * Used for auditing and tracking recent activity such as inventory changes or warehouse updates.
+ */
 @Entity
 @Table
 public class ActivityLog {
@@ -35,6 +39,14 @@ public class ActivityLog {
     public ActivityLog() {
     }
 
+    /**
+     * This creates a new Activitylog entry.
+     * @param entityType the type of entity affected
+     * @param entityId the ID of the entity affected
+     * @param activityType the type of activity
+     * @param description descriptive message
+     * @param createdAt timestamp of event
+     */
     public ActivityLog(String entityType, Integer entityId, String activityType, String description,
             LocalDateTime createdAt) {
         this.entityType = entityType;

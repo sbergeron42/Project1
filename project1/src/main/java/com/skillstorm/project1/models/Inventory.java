@@ -9,6 +9,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * This is responsible for representing the quantity of a specific product stored in a warehouse.
+ * Tracks stock levels and storage locations for inventory items.
+ */
 @Entity
 @Table(name = "INVENTORY")
 public class Inventory {
