@@ -84,6 +84,7 @@ function showSection(sectionName) {
   document.getElementById('warehousesSection').style.display = 'none';
   document.getElementById('inventorySection').style.display = 'none';
   document.getElementById('reportsSection').style.display = 'none';
+  document.getElementById('productsSection').style.display = 'none';
   
   // Different tabs
   if (sectionName === 'dashboard') {
